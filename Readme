@@ -1,0 +1,18 @@
+Run main.py
+
+
+
+
+
+
+
+You can find SHAP tutorials and produce the output graphs for various ML algorithms here:
+
+# For SVM, Tree, and other ML algorithms (not Neural Networks) using the wine example with graphics here:
+https://towardsdatascience.com/explain-any-models-with-the-shap-values-use-the-kernelexplainer-79de9464897a
+
+# More Elegant Charts:
+https://medium.com/dataman-in-ai/the-shap-with-more-elegant-charts-bc3e73fa1c0c
+
+# For DeepExplainer and images!
+https://towardsdatascience.com/deep-learning-model-interpretation-using-shap-a21786e91d16
