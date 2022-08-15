@@ -5,10 +5,9 @@ from SupportFunctions import ChoiceImputation
 
 def Get_or_Create_Questionnaire():
 
-    # Num_Questions, df = Create_Synthetic_Data(10, 2000)
+    # Num_Questions, df = Create_Synthetic_Data(11, 3906)
     Num_Questions, df = Dutch_Dataset()
     return Num_Questions, df
-
 
 def Create_Synthetic_Data(Questions=10, Subjects=2000):
     # We choose the number of questions and subjects here.

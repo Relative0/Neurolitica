@@ -124,8 +124,8 @@ def SHAPPlots_NN(model, X_train, X_test, columns):
     X_train_df.columns = columns[:-1]
     explainer_NN, shap_values_NN = SHAPValues_NN(model, X_train, X_test)
 
-    # List = ["Summary_Single", "Summary_All", "Force_Datapoints_All", "Force_Bar", "Waterfall", "Decision", "Decision_Small"]
-    List = ["Decision_Small"]
+    List = ["Summary_Single", "Summary_All", "Force_Datapoints_All", "Force_Bar", "Waterfall", "Decision", "Decision_Small"]
+    # List = ["Decision_Small"]
     Bin_Configuration = 3
     Subject_Number = 712
 
@@ -155,7 +155,8 @@ def SHAPPlots_NN(model, X_train, X_test, columns):
             shap.save_html("NN_Individual_Datapoint.htm", plot)
 
         elif (Choice == "Waterfall"):
-            # Note, the difference in values between this and SVM KernelExplainer might be because I added a [0].
+            # Note, the difference in values between this and SVM KernelExplainer might be because I added a \
+            # [Subject_Number] for an individual subject, but this also changes between runs because the order is randomized.
             shap.plots._waterfall.waterfall_legacy(explainer_NN.expected_value[Bin_Configuration].numpy(), shap_values_NN[Bin_Configuration][Subject_Number],
                                                    feature_names=X_test_df.columns)
 
@@ -501,7 +502,7 @@ def Compute_Subsets_NN(Full_dataset, bins, NumTrials = 5):
         # ordering.
 
         # SHAP_Averaging works to return the question ordering with each of their averaged SHAP values for each of the questions.
-        Initial_SHAP_Orderings_df = SHAP_Averaging(X_arr, Y_arr, bins[Bin_Iterator], df_Col_Names, 2)
+        Initial_SHAP_Orderings_df = SHAP_Averaging(X_arr, Y_arr, bins[Bin_Iterator], df_Col_Names, 10)
 
         # Create the NN here and try to predict Synthetic Data
 
@@ -857,3 +858,13 @@ def SHAP_Averaging(X_arr,Y_arr, TheBinsizelist, Col_Names, NumTrials=2):
     OrderedSHAP.index = ["AveSHAP"]
     # print("Ordered by SHAP importance: \n" + str(Summed.apply(lambda x: x.sort_values(ascending=False), axis=1)))
     return [Combined_SHAP_df, OrderedSHAP]
+
+def NN_FindWeights(model, SummedListofWeights):
+    NN_WeightCoefs_1 = model.coefs_[0]
+    # # print("weights:", NN_WeightCoefs_1)
+    # # print("biases: ", clf.intercepts_)
+    NNList = [abs(ele) for ele in NN_WeightCoefs_1]
+    NNListSum = np.sum(NNList, 1)
+    Modelweights_Rounded = np.array(['%.2f' % elem for elem in NNListSum], dtype='f')
+    SummedListofWeights = np.add(SummedListofWeights, Modelweights_Rounded)
+    return SummedListofWeights

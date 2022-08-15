@@ -17,10 +17,11 @@ def ChooseMethod(TrainTest_Dict, Choice, Questions, SHAP_Analysis, Bin_Length):
     Y_test = TrainTest_Dict["Y_test"]
 
     if(Choice == "NN"):
-        from Methods_NN import Predict_NN, SHAPPlots_NN, Model_NN, Train_NN
+        from Methods_NN import Predict_NN, SHAPPlots_NN, Model_NN, Train_NN, NN_FindWeights
         # Make the model that of a NN
         model = Train_NN(X_train, Y_train, Questions, Bin_Length)
         Predict_NN(model, X_test, Y_test, Bin_arr)
+
         if SHAP_Analysis:
             SHAPPlots_NN(model, X_train, X_test, df_Columns)
     elif(Choice == "SVM"):
@@ -112,26 +113,26 @@ TrainTest_Dict = {"X_train": X_train, "X_test": X_test, "Y_train": Y_train, "Y_t
 #
 # # -----------------------------------------------------------------------
 # # Uncomment if we want to Plot.
-
-# SHAP data per questions and bin configurations for multiple bins.
-FullSHAPData = Get_Data(MultiBin, df, X.columns)
-
-# Bined value for subject data - for single bin (different then that of MultiBin).
-BinnedData = BinData(Y_arr, BinConfigurations())
-
-df["Bin"] = BinnedData
-Data = dict({"BinData": df, "SHAPData": FullSHAPData})
-# model = Train_NN(X_train, Y_train, Num_Questions, Bin_Length)
-# # Uncomment if we want to get the SHAP single question predictions, and both total and configuration Average SHAP values.
-# Need to update Choose_Plots to use the FullSHAPData as well
-Choose_Plots(Data)
+#
+# # SHAP data per questions and bin configurations for multiple bins.
+# FullSHAPData = Get_Data(MultiBin, df, X.columns)
+#
+# # Bined value for subject data - for single bin (different then that of MultiBin).
+# BinnedData = BinData(Y_arr, BinConfigurations())
+#
+# df["Bin"] = BinnedData
+# Data = dict({"BinData": df, "SHAPData": FullSHAPData})
+# # model = Train_NN(X_train, Y_train, Num_Questions, Bin_Length)
+# # # Uncomment if we want to get the SHAP single question predictions, and both total and configuration Average SHAP values.
+# # Need to update Choose_Plots to use the FullSHAPData as well
+# Choose_Plots(Data)
 # # -----------------------------------------------------------------------
 #
 # # -----------------------------------------------------------------------
 # # Uncomment one of these for particular SHAP analysis.
-# DO_SHAP = True
-# ChooseMethod(TrainTest_Dict,"NN", Num_Questions, DO_SHAP, Bin_Length)
-# # ChooseMethod(TrainTest_Dict,"SVM",Num_Questions, DO_SHAP, Bin_Length)
+DO_SHAP = True
+ChooseMethod(TrainTest_Dict,"NN", Num_Questions, DO_SHAP, Bin_Length)
+# ChooseMethod(TrainTest_Dict,"SVM",Num_Questions, DO_SHAP, Bin_Length)
 # # ChooseMethod(TrainTest_Dict,"RFR",Num_Questions, DO_SHAP, Bin_Length)
 # # ChooseMethod(TrainTest_Dict,"EGB",Num_Questions, DO_SHAP, Bin_Length)
 # # ChooseMethod(TrainTest_Dict,"KNN",Num_Questions, DO_SHAP, Bin_Length)
@@ -139,3 +140,5 @@ Choose_Plots(Data)
 # # H20 throws an error.
 # # ChooseMethod("H20_RF")
 # # -----------------------------------------------------------------------
+
+

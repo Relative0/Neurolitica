@@ -71,12 +71,17 @@ def SHAPPlots_SVM(model, X_train, X_test, columns):
             # Note, the difference in values between this and NN DeepExplainer might be because I removed a [0].
             shap.plots._waterfall.waterfall_legacy(explainer_SVM.expected_value, shap_values_SVM[0],
                                                    feature_names=X_test_df.columns)
-
-
         else:
             print("Graph Not Found.")
 
-    # plot the SHAP values for the 10th observation
+
+def SVM_FindWeights(model, SummedListofWeights):
+    SVMList = [abs(ele) for ele in model.coef_]
+    SVMres = np.sum(SVMList, 0)
+    Modelweights_Rounded = np.array(['%.2f' % elem for elem in SVMres], dtype='f')
+    SummedListofWeights = np.add(SummedListofWeights, Modelweights_Rounded)
+    return SummedListofWeights
+
 
 
 

@@ -7,17 +7,15 @@ sns.set()
 from Methods_NN import SHAP_Averaging, Compute_Individual_Predictions
 
 def Choose_Plots(Data):
-    # List = ["Summary_Line", "Scatter_Reg", "distplot", "violin", "swarmplot", "strip_point", "lm", "lm_reg",
+    # List = ["scatter_line", "Scatter_Reg", "distplot", "violin", "swarmplot", "strip_point", "lm", "lm_reg",
     # "pairgrid_scatter_kde", "facetgrid", "joint", "kde", "pair"]
-    # List = ["Summary_Line"]
-    List = [ "pair"]
-
-    Bin_Data = Data["BinData"]
-    SHAP_Data = Data["SHAPData"]
-
+    List = ["Scatter_Reg", "distplot", "swarmplot", "strip_point", "lm", "lm_reg",
+            "pairgrid_scatter_kde", "facetgrid", "joint", "kde", "pair"]
+    # List = [ "joint", "kde", "pair"]
+    # List = ["facetgrid"]
 
     for Choice in List:
-        if (Choice == "Summary_Line"):
+        if (Choice == "scatter_line"):
             scatter_line(Data)
 
         elif (Choice == "Scatter_Reg"):
@@ -73,9 +71,12 @@ def Get_Data(Bins, df, question_names):
     Results_DF = pd.DataFrame()
 
     Metrics_df = pd.DataFrame(columns=X.columns)
-    # AveSHAP_df = pd.DataFrame()
-    Question_Predictions_Ave, Question_Predictions_Ind = Compute_Individual_Predictions(df, Bins, 10)
+    # Here we get the average of N_Q_Prediction_trials to see how well each individual question does towards various \
+    # prediction metrics.
+    N_Q_Prediction_trials = 10
+    Question_Predictions_Ave, Question_Predictions_Ind = Compute_Individual_Predictions(df, Bins, N_Q_Prediction_trials)
     Bincount = 0
+    N_SHAP_trials = 2
 
     for BinsizeName, TheBinsizeList in Bins:
         NumberofBins = len(TheBinsizeList) + 1
@@ -95,7 +96,7 @@ def Get_Data(Bins, df, question_names):
             # Metrics_df.append(Metric_value[l])
 
 
-        SHAPConfig_Avg, AllConfig_Avg = SHAP_Averaging(X_arr, Y_arr, Bins[Bincount], question_names)
+        SHAPConfig_Avg, AllConfig_Avg = SHAP_Averaging(X_arr, Y_arr, Bins[Bincount], question_names, N_SHAP_trials)
         # Metrics_df.loc["AveSHAP"] = AveSHAP.tolist()
 
         Combined_df = pd.concat([Metrics_df, AllConfig_Avg, SHAPConfig_Avg], ignore_index=False, sort=True)
@@ -158,39 +159,46 @@ def Example_Plot_1(df):
     plt.tight_layout()
     plt.show()
 
-def scatter_line(df):
-    df_long = df["Bin"]
+def scatter_line(Data):
+    SHAP_Data = Data["SHAPData"]
+    N = 6
+    SHAP_Data= SHAP_Data.iloc[:, :N]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+
 
     # g = sns.catplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin", data=df_long, height=5, aspect=.8)
     # plt.show()
     # plt.figure(figsize=(15, 10))
-    ax = sns.scatterplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
+    ax = sns.scatterplot(x='Question', y='Accuracy', hue="Bin",
                          legend='full',
-                         data=df_long,
-                         palette=sns.color_palette("Set1", n_colors=len(df_long.Bin.unique())))
-    Accuracy_Indexes_per_Accuracy = df_long.groupby('Accuracy_Indexes')['Accuracies'].max()
-    sns.lineplot(data=Accuracy_Indexes_per_Accuracy, ax=ax.axes, color='black')
+                         data=SHAP_Data,
+                         palette=sns.color_palette("Set1", n_colors=len(SHAP_Data.Bin.unique())))
+    Accuracy_Indexes_per_Accuracy = SHAP_Data.groupby('Accuracy')['Accuracy'].max()
+    SHAP_Data.drop('Question', axis=1, inplace=True)
+    sns.lineplot(data=SHAP_Data, ax=ax.axes, color='black')
     # max_transistors_per_year = df.groupby('Accuracy_Indexes')['Accuracies'].max()
     plt.tight_layout()
     plt.show()
 
-def scatter_reg(df):
-    df_long = df["Bin"]
+def scatter_reg(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
 
     # g = sns.catplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin", data=df_long, height=5, aspect=.8)
     # plt.show()
     # plt.figure(figsize=(15, 10))
-    ax = sns.scatterplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
+    ax = sns.scatterplot(x='Accuracy', y='AveSHAP', hue="Bin",
                          legend='full',
-                         data=df_long,
-                         palette=sns.color_palette("Set1", n_colors=len(df_long.Bin.unique())))
-    ax = sns.regplot(x='Accuracy_Indexes', y='Accuracies', data=df_long,scatter=False, ax=ax.axes,order=3)
+                         data=SHAP_Data,
+                         palette=sns.color_palette("Set1", n_colors=len(SHAP_Data.Bin.unique())))
+    ax = sns.regplot(x='Accuracy', y='AveSHAP', data=SHAP_Data,scatter=False, ax=ax.axes,order=3)
     # ax.set_xlim(2006, 2021)
     # ax.set_ylim(0, 70)
     plt.show()
 
-def distplot(df):
-    df_long = df["Bin"]
+def distplot(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
 
     # sns.distplot(tips_df["total_bill"], bins=9, label="total_bil")
     # sns.distplot(tips_df["tip"], bins=9, label="tip")
@@ -198,48 +206,43 @@ def distplot(df):
     sns.set(style="white", palette="muted", color_codes=True)
     # sns.displot(data=df_long, y="Accuracies", kde=True)
     # sns.displot(data=df_long["Bin"], y=df_long["Accuracies"], kde=True)
-    sns.displot(df_long["Bin"], y=df_long["Accuracies"], kde=True)
+    sns.displot(x=SHAP_Data["Accuracy"], kde=True)
     plt.show()
 
-def violin(df):
-    df_long = BinData_RandomVals(2)
+def violin(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
 
     # g = sns.catplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin", data=df_long, height=5, aspect=.8)
     # plt.show()
     # plt.figure(figsize=(15, 10))
     # ax = sns.scatterplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
 
-    plt.figure(figsize=(15, 10))
-    sns.set()
-    _, ax = plt.subplots(figsize=(10, 7))
-    sns.violinplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
-                   data=df_long,
-                   split=True,
-                   bw=.5,
-                   cut=0.3,
-                   linewidth=1,
-                   palette=sns.color_palette(['green', 'red']))
+    sns.violinplot(x="Question", y="Accuracy", data=SHAP_Data, dodge=False)
+    # ax = sns.violinplot(x="day", y="total_bill", hue="weekend", data=tips, dodge=False)
     # ax.set(ylim=(0, 700))
     plt.show()
 
-def swarmplot(df):
-    df_long = df["Bin"]
+def swarmplot(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
 
     _, ax = plt.subplots(figsize=(21, 9))
-    sns.swarmplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin", data=df_long, size=4)
+    sns.swarmplot(x='Question', y='Accuracy', hue="Bin", data=SHAP_Data, size=4)
     plt.show()
 
-def strip_point(df):
-    df_long = df["Bin"]
+def strip_point(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
     _, ax = plt.subplots(figsize=(10, 7))
     sns.despine(bottom=True, left=True)
 
-    sns.stripplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
-                  data=df_long, dodge=.5, alpha=.55, zorder=1)
+    sns.stripplot(x='Question', y='Accuracy', hue="Bin",
+                  data=SHAP_Data, dodge=.5, alpha=.55, zorder=1)
 
-    sns.pointplot(x='Accuracy_Indexes', y='Accuracies', hue="Bin",
-                  data=df_long, dodge=.5, join=False, palette="dark",
-                  markers="d", scale=.75, ci=None)
+    # sns.pointplot(x='Accuracy', y='AveSHAP', hue="Bin",
+    #               data=SHAP_Data, dodge=.5, join=False, palette="dark",
+    #               markers="d", scale=.75, ci=None)
 
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles, labels, title="Bin",
@@ -247,47 +250,63 @@ def strip_point(df):
               loc="best", ncol=2, frameon=True)
     plt.show()
 
-def lm(df):
-    df_long = df["Bin"]
-    sns.lmplot(x='Accuracy_Indexes', y='Accuracies', data=df_long, hue='Bin', col='Bin', col_wrap=3)
+def lm(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+    sns.lmplot(x='AveSHAP', y='Accuracy', hue="Bin", data=SHAP_Data, col='Bin') # , col_wrap=3
     plt.tight_layout()
     plt.show()
 
-def lm_reg(df):
-    df_long = df["Bin"]
-    ax = sns.lmplot(x='Accuracy_Indexes', y='Accuracies', data=df_long, hue='Bin', fit_reg=False)
+def lm_reg(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+    ax = sns.lmplot(x='AveSHAP', y='Accuracy', hue="Bin", data=SHAP_Data, fit_reg=False)
     # ax.axes[0, 0].set_xlim((2006, 2021))
-    sns.regplot(x='Accuracy_Indexes', y='Accuracies', data=df_long, scatter=False, ax=ax.axes[0, 0], order=3)
+    sns.regplot(x='AveSHAP', y='Accuracy', data=SHAP_Data, scatter=False, ax=ax.axes[0, 0], order=3)
     plt.show()
 
-def pairgrid_scatter_kde(df):
-    df_long = df["Bin"]
-    ax = sns.PairGrid(df_long[['Accuracies', 'Bin']], diag_sharey=False)
+def pairgrid_scatter_kde(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+    ax = sns.PairGrid(SHAP_Data[['Accuracy', 'AveSHAP']], diag_sharey=False)
     ax.map_upper(sns.scatterplot)
     ax.map_lower(sns.kdeplot, colors="C0")
     ax.map_diag(sns.kdeplot, lw=1, shade=True)
     plt.show()
 
-def facetgrid(df):
-    df_long = df["Bin"]
-    ax = sns.FacetGrid(df_long, col="Accuracies", row="Bin", margin_titles=True)
-    ax.map(plt.hist, "Bin")
+def facetgrid(Data):
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+    g = sns.FacetGrid(SHAP_Data, col="Question", hue="Bin")
+    g.map_dataframe(sns.scatterplot, x="AveSHAP", y="Accuracy")
+    # g.add_legend()
+    # ax = sns.FacetGrid(SHAP_Data, col="Question", row="Accuracy", margin_titles=True)
+    # ax.map(plt.hist, "Bin")
+
+    Bin_Data = Data["BinData"]
     plt.show()
 
-def joint(df):
-    df_long = df["Bin"]
-    BinData_RandomVals(7)
-    sns.jointplot(x='Accuracies', y='Bin', data=df_long,
-                  kind="reg", truncate=False, marginal_kws={'bins': 14},
-                  color="m", height=7)
+def joint(Data):
+    Bin_Data = Data["SHAPData"]
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
+    sns.jointplot(x='Accuracy', y='AveSHAP', hue="Bin", data=SHAP_Data, color="m", height=7)
     plt.show()
 
-def kde(df):
-    df_long = df["Bin"]
+def kde(Data):
+
+    SHAP_Data = Data["SHAPData"]
+    SHAP_Data.reset_index(drop=True, inplace=True)
     from matplotlib.ticker import MaxNLocator
     plt.figure(figsize=(6, 6))
-    ax = sns.kdeplot(x='Accuracies', y='Bin', data=df_long, shade=True)
+    ax = sns.kdeplot(x='Accuracy', y='AveSHAP', data=SHAP_Data, hue="Bin", shade=True)
     ax.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+    Bin_Data = Data["BinData"]
+    plt.figure(figsize=(6, 6))
+    ax = sns.kdeplot(x='PSWQ_2', y='PSWQ_7', data=Bin_Data, hue="Bin", shade=True)
+    ax.axes.xaxis.set_major_locator(MaxNLocator(integer=True))
+
     plt.show()
 
 def pair(Data):
