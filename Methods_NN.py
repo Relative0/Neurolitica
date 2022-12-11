@@ -502,12 +502,12 @@ def Compute_Subsets_NN(Full_dataset, bins, NumTrials = 5):
         # ordering.
 
         # SHAP_Averaging works to return the question ordering with each of their averaged SHAP values for each of the questions.
-        Initial_SHAP_Orderings_df = SHAP_Averaging(X_arr, Y_arr, bins[Bin_Iterator], df_Col_Names, 10)
+        SHAP_Configuration_Vals, Ave_SHAP_Ordered_df = SHAP_Averaging(X_arr, Y_arr, bins[Bin_Iterator], df_Col_Names, 2)
 
         # Create the NN here and try to predict Synthetic Data
 
         # Extract the row of questions (from file) associated to each bin array.
-        RowofQuestions = Initial_SHAP_Orderings_df.columns
+        RowofQuestions = Ave_SHAP_Ordered_df.columns
 
         # Create a list and pull off the outer [ ] brackets.
         Subset_TrainAndTest = RowofQuestions.tolist()

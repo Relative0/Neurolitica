@@ -81,7 +81,7 @@ MultiBin = MultiBinConfigurations()
 
 # -----------------------------------------------------------------------
 # Prediction comparisons between the full questionnaire and the question-by-question subset.
-# Compute_Subsets_NN(df, MultiBin,2)
+Compute_Subsets_NN(df, MultiBin,2)
 # -----------------------------------------------------------------------
 
 # -----------------------------------------------------------------------

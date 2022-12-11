@@ -105,15 +105,14 @@ def MultiBinConfigurations():
     bins = []
     bins.append(TwoBin)
     bins.append(ThreeBin)
-    bins.append(FourBin)
-    bins.append(FiveBin)
-    bins.append(SixBin)
-    bins.append(SevenBin)
-    bins.append(EightBin)
+    # bins.append(FourBin)
+    # bins.append(FiveBin)
+    # bins.append(SixBin)
+    # bins.append(SevenBin)
+    # bins.append(EightBin)
 
     return bins
 
-    return bin
 
 def BinData(df,BinList):
 
